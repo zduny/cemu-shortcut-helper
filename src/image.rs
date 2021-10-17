@@ -2,7 +2,7 @@ use ico::{IconDir, IconDirEntry, IconImage, ResourceType};
 use lazy_static::lazy_static;
 use reqwest::blocking::Client;
 use scraper::{ElementRef, Selector};
-use std::{error::Error, fs::{self, File}};
+use std::{error::Error, fs::{self, File}, path::PathBuf};
 use image::{DynamicImage, GenericImageView, imageops::FilterType};
 
 use crate::GAMEFAQS_URL;
@@ -31,9 +31,16 @@ fn is_eu(alt: &str) -> bool {
 
 fn links_filter(element: &ElementRef) -> bool {
     let mut image = element.select(&THUMBNAIL_SELECTOR);
-    let alt = image.next().unwrap().value().attr("alt").unwrap();
 
-    is_eu(alt) && (!is_limited_edition(alt) && !is_premium_pack(alt) && !is_steelbook_edition(alt))
+    if let Some(image) = image.next() {
+        if let Some(alt) = image.value().attr("alt") {
+            is_eu(alt) && (!is_limited_edition(alt) && !is_premium_pack(alt) && !is_steelbook_edition(alt))
+        } else {
+             false
+        }
+    } else {
+        false
+    }
 }
 
 fn image_url(client: &Client, url: &str) -> Result<String, Box<dyn Error>> {
@@ -43,14 +50,18 @@ fn image_url(client: &Client, url: &str) -> Result<String, Box<dyn Error>> {
 
     let html = scraper::Html::parse_document(&body);
 
-    let img = html.select(&IMAGE_SELECTOR).next().unwrap();
-    
-    let src = format!("{}{}", GAMEFAQS_URL, img.value().attr("src").unwrap());
-
-    Ok(src)
+    if let Some(image) = html.select(&IMAGE_SELECTOR).next() {
+        if let Some(src) = image.value().attr("src") {
+            Ok(format!("{}{}", GAMEFAQS_URL, src))
+        } else {
+            Err("Image had no \"src\" attribute".into())
+        }
+    } else {
+        Err("No images found".into())
+    }
 }
 
-pub fn icon_urls(client: &Client, game_url: &str) -> Result<Vec<String>, Box<dyn Error>> {
+fn icon_urls(client: &Client, game_url: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let url = format!("{}/images", game_url);
     let response = client.get(url).send()?;
 
@@ -59,14 +70,16 @@ pub fn icon_urls(client: &Client, game_url: &str) -> Result<Vec<String>, Box<dyn
     let html = scraper::Html::parse_document(&body);
 
     let links = html.select(&IMAGE_LINK_SELECTOR);
-    let links = links
-        .filter(links_filter)
-        .map(|e| e.value().attr("href").unwrap().to_string())
-        .map(|s| format!("{}{}", GAMEFAQS_URL, s));
-
-    let urls = links.map(|url| image_url(client, &url).unwrap()).collect();
-
-    Ok(urls)
+    links.filter(links_filter)
+        .map(|link| {
+            if let Some(href) = link.value().attr("href") {
+                let covers_url = format!("{}{}", GAMEFAQS_URL, href);
+                image_url(client, &covers_url)
+            } else {
+                Err("Link had no \"href\" attribute".into())
+            }
+        })
+        .collect()
 }
 
 fn download_and_decode(client: &Client, url: &str) -> Result<DynamicImage, Box<dyn Error>> {
@@ -81,39 +94,42 @@ fn is_square(image: &DynamicImage) -> bool {
     image.width() == image.height()
 }
 
-fn add_entry(icon_dir: &mut IconDir, image: &DynamicImage, size: u32) {
+fn add_entry(icon_dir: &mut IconDir, image: &DynamicImage, size: u32) -> Result<(), Box<dyn Error>> {
     let image = image.resize(size, size, FilterType::CatmullRom);
     let rgba_data = image.into_rgba8().into_raw();
     let icon_image = IconImage::from_rgba_data(size, size, rgba_data);
-    icon_dir.add_entry(IconDirEntry::encode(&icon_image).unwrap());
+    icon_dir.add_entry(IconDirEntry::encode(&icon_image)?);
+
+    Ok(())
 }
 
-fn save_as_ico_and_return_relative_path(name: &str, image: &DynamicImage) -> String {
+fn save_as_ico_and_return_path(name: &str, image: &DynamicImage) -> Result<PathBuf, Box<dyn Error>> {
     let mut icon_dir = IconDir::new(ResourceType::Icon);
-    add_entry(&mut icon_dir, image, 256);
-    add_entry(&mut icon_dir, image, 48);
-    add_entry(&mut icon_dir, image, 32);
-    add_entry(&mut icon_dir, image, 16);
+    add_entry(&mut icon_dir, image, 256)?;
+    add_entry(&mut icon_dir, image, 48)?;
+    add_entry(&mut icon_dir, image, 32)?;
+    add_entry(&mut icon_dir, image, 16)?;
 
-    let path = format!("icons/{}.ico", name);
-    let file = File::create(path.clone()).unwrap();
-    icon_dir.write(file).unwrap();
+    let relative_path = format!("icons/{}.ico", name);
+    let file = File::create(relative_path.clone())?;
+    icon_dir.write(file)?;
 
-    path
+    let mut path = PathBuf::new();
+    path.push(std::env::current_dir()?);
+    path.push(relative_path);
+
+    Ok(path)
 }
 
-pub fn download_icons(client: &Client, game_url: &str) -> Result<Vec<String>, Box<dyn Error>> {
+pub fn download_icons(client: &Client, game_url: &str) -> Result<Vec<PathBuf>, Box<dyn Error>> {
     let icon_urls = icon_urls(client, game_url)?;
     let icons = icon_urls.iter()
-        .map(|url| download_and_decode(client, url).unwrap());
-
-    let icons = icons.filter(is_square);
+        .filter_map(|url| download_and_decode(client, url).ok())
+        .filter(is_square);
 
     fs::create_dir_all("icons")?;
-    let paths = icons.enumerate().map(|(i, icon)| {
+    icons.enumerate().map(|(i, icon)| {
         let name = format!("abc {}", i);
-        save_as_ico_and_return_relative_path(&name, &icon)
-    }).collect();
-
-    Ok(paths)
+        save_as_ico_and_return_path(&name, &icon)
+    }).collect()
 }

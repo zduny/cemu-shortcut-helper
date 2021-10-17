@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use reqwest::blocking::Client;
 use scraper::Selector;
-use std::{collections::HashMap, error::Error, io::ErrorKind};
+use std::{collections::HashMap, error::Error};
 
 use crate::GAMEFAQS_URL;
 
@@ -37,14 +37,13 @@ pub fn game_url(client: &Client, name: &str) -> Result<String, Box<dyn Error>> {
 
     let html = scraper::Html::parse_document(&body);
 
-    let result = if let Some(element) = html.select(&GAME_LINK_SELECTOR).next() {
-        let href = element.value().attr("href").unwrap();
-        Ok(format!("{}{}", GAMEFAQS_URL, href.to_string()))
+    if let Some(element) = html.select(&GAME_LINK_SELECTOR).next() {
+        if let Some(href) = element.value().attr("href") {
+            Ok(format!("{}{}", GAMEFAQS_URL, href.to_string()))
+        } else {
+            Err("Game link had no \"href\" attribute".into())
+        }
     } else {
-        Err(
-            std::io::Error::new(ErrorKind::NotFound, format!("Game \"{}\" not found.", name))
-                .into(),
-        )
-    };
-    result
+        Err(format!("Game \"{}\" not found.", name).into())
+    }
 }

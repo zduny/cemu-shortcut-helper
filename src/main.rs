@@ -1,7 +1,7 @@
 use client::create_client;
 use game::game_url;
 
-use crate::image::{download_icons, icon_urls};
+use crate::image::download_icons;
 
 mod client;
 mod game;
@@ -14,10 +14,7 @@ fn main() {
     let game_url = game_url(&client, "Mario Kart 8").unwrap();
     println!("{}", game_url);
 
-    let img_urls = icon_urls(&client, &game_url).unwrap();
-    for url in img_urls {
-        println!("{}", url);
+    for path in download_icons(&client, &game_url).unwrap() {
+        println!("{}", path.display());
     }
-
-    download_icons(&client, &game_url).unwrap();
 }
