@@ -59,10 +59,10 @@ fn image_url(client: &Client, url: &str) -> Result<String, Box<dyn Error>> {
         if let Some(src) = image.value().attr("src") {
             Ok(format!("{}{}", GAMEFAQS_URL, src))
         } else {
-            Err("Image had no \"src\" attribute".into())
+            Err("Image had no \"src\" attribute.".into())
         }
     } else {
-        Err("No images found".into())
+        Err("No images found.".into())
     }
 }
 
@@ -82,7 +82,7 @@ fn icon_urls(client: &Client, game_url: &str) -> Result<Vec<String>, Box<dyn Err
                 let covers_url = format!("{}{}", GAMEFAQS_URL, href);
                 image_url(client, &covers_url)
             } else {
-                Err("Link had no \"href\" attribute".into())
+                Err("Link had no \"href\" attribute.".into())
             }
         })
         .collect()
@@ -153,7 +153,7 @@ pub fn download_icons(
         .enumerate()
         .map(|(i, icon)| {
             let name = if add_index {
-                format!("{} {}", name, i)
+                format!("{} {}", name, i + 1)
             } else {
                 name.to_string()
             };

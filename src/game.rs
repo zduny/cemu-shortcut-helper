@@ -11,24 +11,8 @@ lazy_static! {
 
 pub fn game_url(client: &Client, name: &str) -> Result<String, Box<dyn Error>> {
     let mut params = HashMap::new();
-    params.insert("game_type", "2");
     params.insert("game", name);
     params.insert("platform", "118");
-    params.insert("distribution", "22");
-    params.insert("category", "0");
-    params.insert("date_type", "0");
-    params.insert("date_1", "");
-    params.insert("date_2", "");
-    params.insert("date_year", "0");
-    params.insert("contents_type", "0");
-    params.insert("contents", "0");
-    params.insert("region_type", "0");
-    params.insert("region", "0");
-    params.insert("company_type", "0");
-    params.insert("company_text", "");
-    params.insert("company", "");
-    params.insert("sort", "0");
-    params.insert("min_scores", "0");
 
     let url = format!("{}/search_advanced", GAMEFAQS_URL);
     let response = client.post(url).form(&params).send()?;
@@ -41,7 +25,7 @@ pub fn game_url(client: &Client, name: &str) -> Result<String, Box<dyn Error>> {
         if let Some(href) = element.value().attr("href") {
             Ok(format!("{}{}", GAMEFAQS_URL, href.to_string()))
         } else {
-            Err("Game link had no \"href\" attribute".into())
+            Err("Game link had no \"href\" attribute.".into())
         }
     } else {
         Err(format!("Game \"{}\" not found.", name).into())
