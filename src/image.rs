@@ -121,15 +121,21 @@ fn save_as_ico_and_return_path(name: &str, image: &DynamicImage) -> Result<PathB
     Ok(path)
 }
 
-pub fn download_icons(client: &Client, game_url: &str) -> Result<Vec<PathBuf>, Box<dyn Error>> {
+pub fn download_icons(client: &Client, name: &str, game_url: &str) -> Result<Vec<PathBuf>, Box<dyn Error>> {
     let icon_urls = icon_urls(client, game_url)?;
-    let icons = icon_urls.iter()
+    let icons: Vec<DynamicImage> = icon_urls.iter()
         .filter_map(|url| download_and_decode(client, url).ok())
-        .filter(is_square);
+        .filter(is_square)
+        .collect();
 
     fs::create_dir_all("icons")?;
-    icons.enumerate().map(|(i, icon)| {
-        let name = format!("abc {}", i);
+    let add_index = icons.len() > 1;
+    icons.iter().enumerate().map(|(i, icon)| {
+        let name = if add_index {
+            format!("{} {}", name, i)
+        } else {
+            name.to_string()
+        };
         save_as_ico_and_return_path(&name, &icon)
     }).collect()
 }

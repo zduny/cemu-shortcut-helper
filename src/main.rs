@@ -14,7 +14,7 @@ fn main() {
     let game_url = game_url(&client, "Mario Kart 8").unwrap();
     println!("{}", game_url);
 
-    for path in download_icons(&client, &game_url).unwrap() {
+    for path in download_icons(&client, "Mario Kart 8", &game_url).unwrap() {
         println!("{}", path.display());
     }
 }
