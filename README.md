@@ -21,8 +21,15 @@ Yoy may then move them to any location you like (for example: desktop).
 
 Starting program again will overwrite existing files (icons and shortcuts in directories mentioned above).
 
+## Development
+If you plan to fork this project, to make debugging easier I recommend copying `Cemu.exe` and `settings.xml`
+from your Cemu directory into project root - otherwise program will error out very early on `cargo run`.
+
+Also, piece of advice: don't start resulting shortcuts as they will launch `Cemu.exe` and pollute your project directory.
+For final testing it's better to just move `cemu-shortcut-helper.exe` from `target` to your Cemu directory and launch it there. 
+
 ## Disclaimer
-This project is no way affiliated with either Cemu project or Cemu development team. 
+This project is no way affiliated with either Cemu Emulator project or Cemu development team. 
 
 ## See also
 [Cemu Emulator](https://cemu.info/)
