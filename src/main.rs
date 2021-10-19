@@ -1,4 +1,4 @@
-use std::{env, error::Error, fs, path::PathBuf};
+use std::{env, error::Error, fs, path::PathBuf, process};
 
 use cemu::{installed_games, Game};
 use clap::{App, Arg, crate_version};
@@ -90,7 +90,10 @@ fn main() {
     let full_screen = matches.is_present("fullscreen");
 
     match create_shortcuts(full_screen) {
-        Err(error) => eprintln!("Program aborted due to error: {}", error),
+        Err(error) => { 
+            eprintln!("Program aborted due to error: {}", error);
+            process::exit(1);
+        },
         _ => (),
     }
 }
