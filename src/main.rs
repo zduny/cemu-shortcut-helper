@@ -38,8 +38,8 @@ fn create_shortcut(
         shortcut.set_icon_location(icon_paths[0].to_str().map(|path| path.to_string()))
     }
 
-    let shorcut_path = format!("shortcuts/{}.lnk", sanitize_name(&game.name));
-    shortcut.create_lnk(shorcut_path)?;
+    let shortcut_path = format!("shortcuts/{}.lnk", sanitize_name(&game.name));
+    shortcut.create_lnk(shortcut_path)?;
 
     Ok(())
 }
