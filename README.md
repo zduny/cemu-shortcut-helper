@@ -5,7 +5,7 @@ Create Windows shortcuts (with icons) to all games installed in Cemu with a sing
 If you like this tool and would like to see more emulation related projects, please consider [buying me a coffee](https://ko-fi.com/zduny).
 
 ## Usage
-Download the archive from releases tab, unpack its contents into your Cemu directory (make sure to not create a containing directory - 
+Download the [archive](https://github.com/zduny/cemu-shortcut-helper/releases/download/v0.1.0/shortcut-helper.zip) from releases tab, unpack its contents into your Cemu directory (make sure to not create a containing directory - 
 `shortcut-helper.exe` has to be in the same directory as `Cemu.exe`).
 
 Internet connection is required for program to work correctly - icons are downloaded from [GameFAQs](https://gamefaqs.gamespot.com/) website.
