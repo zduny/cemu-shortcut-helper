@@ -69,7 +69,7 @@ fn create_shortcuts(full_screen: bool) -> Result<(), Box<dyn Error>> {
         );
         match process_game(&client, &game, full_screen) {
             Ok(_) => println!("Done."),
-            Err(error) => eprintln!("Error occured: {}", error),
+            Err(error) => eprintln!("Error occurred: {}", error),
         }
     }
 
