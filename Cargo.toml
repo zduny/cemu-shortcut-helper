@@ -9,14 +9,14 @@ build = "build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-reqwest = { version = "0.11.4", features = ["blocking"] }
-scraper = "0.12.0"
+reqwest = { version = "0.11.10", features = ["blocking"] }
+scraper = "0.13.0"
 lazy_static = "1.4.0"
-image = "0.23.14"
+image = "0.24.2"
 ico = "0.1.0"
 xmltree = "0.10.3"
-mslnk = { git = "https://github.com/zduny/mslnk.git" }
-clap = "3.0.0-beta.5"
+mslnk = "0.1.8"
+clap = "3.1.18"
 
 [build-dependencies]
 winres = "0.1.12"
