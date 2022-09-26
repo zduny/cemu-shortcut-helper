@@ -1,6 +1,8 @@
 # Shortcut helper for Cemu
 Create Windows shortcuts (with icons) to all games installed in Cemu with a single double-click.
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O31JYZ4)
+
 ## Donate
 If you like this tool and would like to see more emulation related projects, please consider [buying me a coffee](https://ko-fi.com/zduny).
 
